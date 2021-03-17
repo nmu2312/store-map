@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, useEffect } from 'react';
 import { Button, Card, Icon, Statistic } from 'semantic-ui-react';
 import './Timer.css';
 
