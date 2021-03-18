@@ -1,18 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { FC } from 'react';
 import ShopItem from 'components/ShopItem';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ShopList: FC<{ shops: any[]; page: number; pageLength: number }> = ({
-  shops,
-  page,
-  pageLength,
-}) => {
-  // eslint-disable-next-line no-console
+type Props = {
+  shops: unknown[];
+  page: number;
+  shopsPerPage: number;
+};
+const ShopList: FC<Props> = ({ shops, page, shopsPerPage }) => {
   const shopsToDisplay = shops.slice(
-    page * pageLength,
-    (page + 1) * pageLength,
+    page * shopsPerPage,
+    (page + 1) * shopsPerPage,
   );
 
   return (
