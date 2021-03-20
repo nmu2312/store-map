@@ -1,43 +1,46 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-shadow */
+
 import { FC, useEffect, useState, useCallback } from 'react';
 import ShopList from 'components/ShopList';
 import PageNavigation from 'components/PageNavigation';
+import Map from 'components/Map';
+
+import {
+  genres,
+  Area,
+  areas,
+  identifyAreaFromAddress,
+} from 'data/SearchValues';
 import './App.css';
 
 const App: FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  // const handleMapChange = useCallback((mapObj: google.maps.Map | null) => {
+  //   setMap(mapObj);
+  // }, []);
+
   const [isLoading, setIsLoading] = useState(true);
   const [shops, setShops] = useState<unknown[]>([]);
   const [shopsToDisplay, setShopsToDisplay] = useState<unknown[]>([]);
   const [page, setPage] = useState(0);
   const shopsPerPage = 12;
 
-  interface genreObj {
-    [key: string]: string;
-  }
-  const genres = {
-    '2': '和食',
-    '3': '洋食',
-    '4': 'カフェ',
-    '5': 'その他',
-    '6': '中華料理',
-  } as genreObj;
-
+  const [area, setArea] = useState<Area>('全て');
   const [activeGenres, setActiveGenres] = useState(['2', '3', '4', '5', '6']);
-  const [area, setArea] = useState(0);
   const [cashless, setCashless] = useState(false);
   const [takeOut, setTakeOut] = useState(false);
   const [delivery, setDelivery] = useState(false);
+  const [keyword, setKeyword] = useState('');
 
   useEffect(() => {
     void (async () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const shopData = await fetch(
-        'https://www.cci-k.or.jp/gurume/wp/wp-json/wp/v2/shops?per_page=100&_embed',
+        'https://www.cci-k.or.jp/gurume/wp-json/wp/v2/shops?per_page=100&_embed',
         // eslint-disable-next-line consistent-return
       ).then((response) => response.json());
       setShops(shopData);
@@ -48,20 +51,27 @@ const App: FC = () => {
   }, []);
 
   useEffect(() => {
-    const updatedShopsToDisplay = shops.filter(
-      (shop: any) =>
-        !(
-          (cashless && shop?.custom_fields?.cashless?.[0] !== '1') ||
-          (takeOut && shop?.custom_fields?.takeout?.[0] !== '1') ||
-          (delivery && shop?.custom_fields?.delivery?.[0] !== '1') ||
-          (area && shop?.custom_fields?.area) ||
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          !activeGenres.includes(shop?.genre?.[0]?.toString())
-        ),
+    setShopsToDisplay(
+      shops.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (shop: any): boolean =>
+          activeGenres.includes(shop?.genre[0]?.toString()) &&
+          (!cashless || shop?.custom_fields?.cashless[0] === '1') &&
+          (!takeOut || shop?.custom_fields?.takeout[0] === '1') &&
+          (!delivery || shop?.custom_fields?.delivery[0] === '1') &&
+          (keyword.length === 0 ||
+            (
+              shop?.title?.rendered?.toLowerCase() +
+              shop?.custom_fields?.copy[0]?.toLowerCase() +
+              shop?.custom_fields?.address[0] +
+              genres[shop?.genre[0]?.toString()]
+            ).includes(keyword)) &&
+          (area === '全て' ||
+            area === identifyAreaFromAddress(shop?.custom_fields?.address[0])),
+      ),
     );
-    setShopsToDisplay(updatedShopsToDisplay);
     setPage(0);
-  }, [shops, activeGenres, cashless, area, takeOut, delivery]);
+  }, [shops, activeGenres, cashless, area, delivery, takeOut, keyword]);
 
   const switchPage = useCallback(
     (pageIndex: number): void => {
@@ -71,7 +81,7 @@ const App: FC = () => {
   );
 
   const handleGenreChange = useCallback(
-    (genreKey: string) => {
+    (genreKey: string): void => {
       if (activeGenres.includes(genreKey)) {
         setActiveGenres(activeGenres.filter((val) => val !== genreKey));
       } else {
@@ -81,8 +91,33 @@ const App: FC = () => {
     [activeGenres],
   );
 
+  const handleKeywordChange = useCallback(
+    (event: React.FormEvent<HTMLInputElement>): void => {
+      if (
+        !(event.target instanceof HTMLInputElement) ||
+        event.target.value.length === 1
+      ) {
+        return;
+      }
+      setKeyword(event.target.value);
+    },
+    [],
+  );
+
   return (
     <>
+      <Map shops={shopsToDisplay} setMap={setMap} map={map} />
+      地区
+      {areas.map((areaVal) => (
+        <div key={areaVal}>
+          <input
+            type="radio"
+            checked={area === areaVal}
+            onChange={() => setArea(areaVal)}
+          />
+          {areaVal}
+        </div>
+      ))}
       ジャンル
       {Object.keys(genres).map((genreKey) => (
         <div key={genreKey}>
@@ -113,6 +148,10 @@ const App: FC = () => {
           checked={delivery}
         />
         デリバリー
+      </div>
+      <div>
+        キーワード
+        <input type="text" onInput={(e) => handleKeywordChange(e)} />
       </div>
       {isLoading ? (
         <>Loading...</>

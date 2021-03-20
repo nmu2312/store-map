@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": "src",
     "target": "es5",
+    "types": ["google.maps"],
     "downlevelIteration": true,
     "lib": [
       "dom",
@@ -24,5 +25,5 @@
   },
   "include": [
     "src"
-  ]
+, "index.d.ts"  ]
 }
