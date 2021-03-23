@@ -1,0 +1,12 @@
+google mapのインスタンスオブジェクトはグローバルに共有する必要あり
+ステートの共有　useContextとuseReducer
+
+ロジックも共有したほうがいいものあり
+ロジックの共有=>Utility か Custom Hookか
+useEffect, useStateなどを含む場合はcustomHook
+含まない場合はutility
+
+generateLatLngObjectFromShop shopItem と Mapで使う
+
+map?.panTo
+map?.setZoom

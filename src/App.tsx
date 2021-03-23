@@ -73,13 +73,6 @@ const App: FC = () => {
     setPage(0);
   }, [shops, activeGenres, cashless, area, delivery, takeOut, keyword]);
 
-  const switchPage = useCallback(
-    (pageIndex: number): void => {
-      setPage(pageIndex);
-    },
-    [setPage],
-  );
-
   const handleGenreChange = useCallback(
     (genreKey: string): void => {
       if (activeGenres.includes(genreKey)) {
@@ -162,9 +155,10 @@ const App: FC = () => {
             shops={shopsToDisplay}
             shopsPerPage={shopsPerPage}
             page={page}
-            switchPage={switchPage}
+            setPage={setPage}
           />
           <ShopList
+            map={map}
             shops={shopsToDisplay}
             page={page}
             shopsPerPage={shopsPerPage}

@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { FC, useCallback } from 'react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { FC, useCallback, useState } from 'react';
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Marker,
+  InfoWindow,
+} from '@react-google-maps/api';
+import MapInsideItems from 'components/MapInsideItems';
 
 const containerStyle = {
   width: '400px',
@@ -31,26 +39,19 @@ const Map: FC<{
     [setMap],
   );
 
+  const [isShown, setIsShown] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [infoWindowTitle, setInfoWindowTitle] = useState<string>('');
+  // const [infoWindowPosition, setInfoWindowPosition] = useState<
+  //   google.maps.LatLng | google.maps.LatLngLiteral
+  // >(center);
+
   const onUnmount = useCallback(() => {
     setMap(null);
   }, [setMap]);
 
   const pan = () => {
     map?.panTo({ lat: 35.50461156824642, lng: 136.85881462186467 });
-  };
-
-  const generateLatLngLiteralFromShop = (
-    shop: any,
-  ): google.maps.LatLng | google.maps.LatLngLiteral => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const positions = shop?.custom_fields?.location[0]
-      .split(',')
-      .map((val: string): number => parseFloat(val));
-
-    return {
-      lat: positions[0],
-      lng: positions[1],
-    };
   };
 
   return isLoaded ? (
@@ -65,12 +66,7 @@ const Map: FC<{
         onLoad={onLoad}
         onUnmount={onUnmount}
       >
-        {shops.map((shop: any) => (
-          <Marker
-            key={shop?.id}
-            position={generateLatLngLiteralFromShop(shop)}
-          />
-        ))}
+        <MapInsideItems shops={shops} map={map} />
       </GoogleMap>
     </>
   ) : (

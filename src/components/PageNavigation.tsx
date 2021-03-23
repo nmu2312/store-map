@@ -4,15 +4,10 @@ type Props = {
   shops: unknown[];
   shopsPerPage: number;
   page: number;
-  switchPage: (pageIndex: number) => void;
+  setPage: (page: number) => void;
 };
 
-const PageNavigation: FC<Props> = ({
-  shops,
-  shopsPerPage,
-  page,
-  switchPage,
-}) => (
+const PageNavigation: FC<Props> = ({ shops, shopsPerPage, page, setPage }) => (
   <>
     {shops.length > shopsPerPage && (
       <div>
@@ -20,7 +15,7 @@ const PageNavigation: FC<Props> = ({
           <button
             className={n === page ? 'selected' : ''}
             type="button"
-            onClick={() => switchPage(n)}
+            onClick={() => setPage(n)}
             key={n}
           >
             {n + 1}
